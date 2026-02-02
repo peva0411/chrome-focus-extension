@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Extension - Settings</title>
+  <link rel="stylesheet" href="../common/themes.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ Focus Extension</h1>
+      <p class="subtitle">Manage your productivity settings</p>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="sites">Blocked Sites</button>
+      <button class="tab-btn" data-tab="schedules">Schedules</button>
+      <button class="tab-btn" data-tab="budget">Time Budget</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+      <button class="tab-btn" data-tab="stats">Statistics</button>
+    </nav>
+
+    <main>
+      <!-- BLOCKED SITES TAB -->
+      <section id="tab-sites" class="tab-content active">
+        <div class="section-header">
+          <h2>Blocked Websites</h2>
+          <p>Manage which sites are blocked during your focus time</p>
+        </div>
+
+        <!-- Add Site Form -->
+        <div class="card">
+          <h3>Add Website to Block</h3>
+          <form id="add-site-form" class="form-inline">
+            <input
+              type="text"
+              id="site-pattern-input"
+              placeholder="e.g., twitter.com, *.reddit.com, youtube.com/watch"
+              class="input"
+            />
+            <button type="submit" class="btn btn-primary">Add Site</button>
+          </form>
+          <div class="help-text">
+            <strong>Pattern examples:</strong>
+            <ul>
+              <li><code>twitter.com</code> - Blocks entire domain and all subdomains</li>
+              <li><code>*.reddit.com</code> - Blocks all Reddit subdomains</li>
+              <li><code>youtube.com/watch</code> - Blocks only YouTube watch pages</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Preset Categories -->
+        <div class="card">
+          <h3>Quick Add Categories</h3>
+          <div class="category-buttons">
+            <button class="btn btn-secondary category-btn" data-category="social">
+              Social Media
+            </button>
+            <button class="btn btn-secondary category-btn" data-category="news">
+              News Sites
+            </button>
+            <button class="btn btn-secondary category-btn" data-category="video">
+              Video Streaming
+            </button>
+            <button class="btn btn-secondary category-btn" data-category="gaming">
+              Gaming
+            </button>
+            <button class="btn btn-secondary category-btn" data-category="shopping">
+              Shopping
+            </button>
+          </div>
+        </div>
+
+        <!-- Import/Export -->
+        <div class="card">
+          <h3>Import / Export</h3>
+          <div class="import-export-controls">
+            <button id="export-btn" class="btn btn-secondary">
+              📥 Export Block List
+            </button>
+            <label class="btn btn-secondary" for="import-file-input">
+              📤 Import Block List
+            </label>
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+          </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card">
+          <div class="search-controls">
+            <input
+              type="text"
+              id="search-sites-input"
+              placeholder="Search blocked sites..."
+              class="input"
+            />
+            <select id="filter-status" class="select">
+              <option value="all">All Sites</option>
+              <option value="enabled">Enabled Only</option>
+              <option value="disabled">Disabled Only</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Blocked Sites List -->
+        <div class="card">
+          <div class="list-header">
+            <h3>Your Blocked Sites (<span id="site-count">0</span>)</h3>
+            <div class="bulk-actions">
+              <button id="enable-all-btn" class="btn-text">Enable All</button>
+              <button id="disable-all-btn" class="btn-text">Disable All</button>
+              <button id="delete-all-btn" class="btn-text text-danger">Delete All</button>
+            </div>
+          </div>
+          
+          <div id="sites-list-container">
+            <!-- Sites will be rendered here -->
+          </div>
+
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <p>No blocked sites yet.</p>
+            <p>Add a site above or choose a category to get started.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OTHER TABS (Placeholders for now) -->
+      <section id="tab-schedules" class="tab-content">
+        <div class="section-header">
+          <h2>Schedule Management</h2>
+          <p>Control when blocking is active with time-based schedules</p>
+        </div>
+
+        <!-- Active Schedule -->
+        <div class="card">
+          <h3>Active Schedule</h3>
+          <select id="active-schedule-select" class="select">
+            <option value="">Always Active (No Schedule)</option>
+          </select>
+          <p class="help-text">
+            Select a schedule to automatically enable/disable blocking at specific times
+          </p>
+        </div>
+
+        <!-- Schedule Templates -->
+        <div class="card">
+          <h3>Create from Template</h3>
+          <div class="category-buttons">
+            <button class="btn btn-secondary template-btn" data-template="WORKDAY">
+              9-5 Workday
+            </button>
+            <button class="btn btn-secondary template-btn" data-template="STUDY_EVENING">
+              Evening Study
+            </button>
+            <button class="btn btn-secondary template-btn" data-template="DEEP_FOCUS">
+              Deep Focus
+            </button>
+            <button class="btn btn-secondary template-btn" data-template="ALWAYS_ON">
+              Always On
+            </button>
+          </div>
+        </div>
+
+        <!-- Create Custom Schedule -->
+        <div class="card">
+          <h3>Create Custom Schedule</h3>
+          <button id="create-schedule-btn" class="btn btn-primary">
+            + Create New Schedule
+          </button>
+        </div>
+
+        <!-- Schedules List -->
+        <div class="card">
+          <h3>Your Schedules (<span id="schedule-count">0</span>)</h3>
+          <div id="schedules-list-container">
+            <!-- Schedules will be rendered here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- BUDGET TAB -->
+      <section id="tab-budget" class="tab-content">
+        <div class="section-header">
+          <h2>Time Budget</h2>
+          <p>Control daily access time for blocked websites</p>
+        </div>
+
+        <!-- Today's Budget Status -->
+        <div class="card">
+          <h3>Today's Budget</h3>
+          <div class="budget-status-display">
+            <div class="budget-circle-large">
+              <div class="budget-circle-inner">
+                <span class="budget-remaining-large" id="today-remaining">--</span>
+                <span class="budget-label-small">minutes left</span>
+              </div>
+            </div>
+            <div class="budget-stats-grid">
+              <div class="stat-item">
+                <span class="stat-label">Used</span>
+                <span class="stat-value" id="today-used">-- min</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total</span>
+                <span class="stat-value" id="today-total">-- min</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Date</span>
+                <span class="stat-value" id="today-date">--</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Active Sessions</span>
+                <span class="stat-value" id="active-sessions">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget Configuration -->
+        <div class="card">
+          <h3>Budget Settings</h3>
+          
+          <div class="form-group">
+            <label for="global-budget">Daily Time Allowance (minutes):</label>
+            <input type="number" id="global-budget" class="input" min="5" max="480" step="5" />
+            <p class="help-text">Total minutes you can spend on blocked sites per day (5-480 minutes)</p>
+          </div>
+
+          <div class="form-group">
+            <label for="reset-time">Budget Reset Time:</label>
+            <input type="time" id="reset-time" class="input" />
+            <p class="help-text">When your daily budget resets (default: midnight)</p>
+          </div>
+
+          <button id="save-budget-btn" class="btn btn-primary">💾 Save Budget Settings</button>
+          <span id="budget-save-status" class="save-status"></span>
+        </div>
+
+        <!-- Per-Site Budget Overrides (Future) -->
+        <div class="card">
+          <h3>Site-Specific Budgets</h3>
+          <p class="help-text">Coming soon: Set different time limits for individual sites</p>
+          <div id="site-budget-list" class="site-budget-list">
+            <!-- Will be populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Budget History -->
+        <div class="card">
+          <h3>Budget History (Last 7 Days)</h3>
+          <div id="budget-chart-container" class="chart-container">
+            <div id="budget-chart" class="budget-chart">
+              <!-- Simple bar chart will be rendered here -->
+            </div>
+          </div>
+          <div id="budget-history-table" class="history-table">
+            <!-- History table will be rendered here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS TAB -->
+      <section id="tab-settings" class="tab-content">
+        <div class="section-header">
+          <h2>General Settings</h2>
+          <p>Configure extension behavior and preferences</p>
+        </div>
+
+        <!-- Extension Control -->
+        <div class="card">
+          <h3>Extension Control</h3>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Enable Extension</div>
+              <div class="setting-description">Turn blocking on/off globally</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="extension-enabled-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="card">
+          <h3>Notifications</h3>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Budget Warnings</div>
+              <div class="setting-description">Notify when budget is running low</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="budget-warnings-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Budget Exhausted</div>
+              <div class="setting-description">Notify when budget is completely used</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="budget-exhausted-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Daily Reset</div>
+              <div class="setting-description">Notify when budget resets</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="daily-reset-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="card">
+          <h3>Appearance</h3>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Theme</div>
+              <div class="setting-description">Choose your preferred color theme</div>
+            </div>
+            <select id="theme-select" class="select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="auto">Auto (System)</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Show Motivational Quotes</div>
+              <div class="setting-description">Display quotes on blocked page</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="show-quotes-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Interstitial Settings -->
+        <div class="card">
+          <h3>Blocked Page Settings</h3>
+          
+          <div class="form-group">
+            <label for="interstitial-delay">Countdown Delay (seconds):</label>
+            <input type="number" id="interstitial-delay" class="input" min="0" max="30" />
+            <p class="help-text">Time before "Continue" button activates</p>
+          </div>
+        </div>
+
+        <!-- Pause Settings -->
+        <div class="card">
+          <h3>Pause Settings</h3>
+          
+          <div class="form-group">
+            <label for="pause-duration">Default Pause Duration (minutes):</label>
+            <select id="pause-duration" class="select">
+              <option value="15">15 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="120">2 hours</option>
+              <option value="-1">Until tomorrow</option>
+            </select>
+            <p class="help-text">Duration used when clicking the pause button</p>
+          </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="card">
+          <h3>Data Management</h3>
+          
+          <div class="button-group">
+            <button id="export-all-btn" class="btn btn-secondary">
+              📥 Export All Data
+            </button>
+            <button id="import-all-btn" class="btn btn-secondary">
+              📤 Import Data
+            </button>
+            <input type="file" id="import-all-file" accept=".json" style="display: none;">
+          </div>
+
+          <hr style="margin: 24px 0;">
+
+          <button id="reset-settings-btn" class="btn btn-text text-danger">
+            Reset All Settings to Default
+          </button>
+          
+          <button id="clear-all-data-btn" class="btn btn-text text-danger">
+            Clear All Extension Data
+          </button>
+        </div>
+
+        <!-- About -->
+        <div class="card">
+          <h3>About Focus Extension</h3>
+          <p>Version: 1.0.0</p>
+          <p>
+            <a href="https://github.com" target="_blank" id="privacy-link">Privacy Policy</a> | 
+            <a href="https://github.com" target="_blank" id="help-link">Help & Documentation</a>
+          </p>
+        </div>
+      </section>
+
+      <!-- STATISTICS TAB -->
+      <section id="tab-stats" class="tab-content">
+        <div class="section-header">
+          <h2>Statistics & Insights</h2>
+          <p>Track your productivity and focus time</p>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🚫</div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-blocks">0</div>
+              <div class="stat-label">Sites Blocked Today</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="focus-time">0h 0m</div>
+              <div class="stat-label">Focus Time Today</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <div class="stat-value" id="streak-days">0</div>
+              <div class="stat-label">Day Streak</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value" id="budget-saved">0%</div>
+              <div class="stat-label">Budget Saved</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Most Blocked Sites -->
+        <div class="card">
+          <h3>Most Blocked Sites</h3>
+          <div id="top-blocked-sites" class="top-sites-list">
+            <p class="help-text">No blocks recorded yet</p>
+          </div>
+        </div>
+
+        <!-- Time of Day Analysis -->
+        <div class="card">
+          <h3>Blocking Activity by Hour</h3>
+          <div class="chart-container">
+            <canvas id="hourly-chart" width="400" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Weekly Trends -->
+        <div class="card">
+          <h3>Weekly Trends</h3>
+          <div class="chart-container">
+            <canvas id="weekly-chart" width="400" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div class="card">
+          <h3>Export Data</h3>
+          <p>Download your statistics and data for backup or analysis</p>
+          <button id="export-stats-btn" class="btn btn-secondary">
+            📥 Export All Statistics
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="options.js" type="module"></script>
+</body>
+</html>

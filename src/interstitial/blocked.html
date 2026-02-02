@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Blocked - Focus Extension</title>
+  <link rel="stylesheet" href="../common/themes.css">
+  <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="icon">
+        🔒
+      </div>
+      
+      <h1>This site is blocked</h1>
+      <p class="subtitle">Focus Extension is helping you stay productive</p>
+      
+      <div class="blocked-url">
+        <strong>Blocked URL:</strong>
+        <span id="blocked-url-text">Loading...</span>
+      </div>
+      
+      <!-- Budget Section -->
+      <div class="budget-section" id="budget-section" style="display: none;">
+        <h3>⏱️ Time Budget Available</h3>
+        
+        <div class="budget-display">
+          <div class="budget-item">
+            <span class="budget-label">Remaining Today:</span>
+            <span class="budget-value" id="budget-remaining">-- minutes</span>
+          </div>
+          <div class="budget-progress">
+            <div class="budget-progress-bar" id="budget-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="budget-warning" id="budget-warning" style="display: none;">
+          ⚠️ Low budget remaining!
+        </div>
+
+        <div class="budget-exhausted" id="budget-exhausted" style="display: none;">
+          ❌ Your time budget is exhausted for today. Try again tomorrow!
+        </div>
+      </div>
+      
+      <div class="info-box">
+        <h3>Why is this blocked?</h3>
+        <p>You added this site to your block list to minimize distractions during focus time.</p>
+      </div>
+      
+      <div class="countdown-notice" id="countdown-notice" style="display: none;">
+        <p>⏱️ This site will use your time budget.</p>
+        <p>Continuing in <span id="countdown">5</span> seconds...</p>
+        <p class="countdown-hint">Click anywhere to cancel</p>
+      </div>
+      
+      <div class="actions">
+        <button id="go-back-btn" class="btn btn-primary">
+          ← Go Back
+        </button>
+        
+        <button id="use-budget-btn" class="btn btn-success" style="display: none;">
+          ⏱️ Continue (Use Time Budget)
+        </button>
+        
+        <button id="remove-block-btn" class="btn btn-secondary">
+          Remove from Block List
+        </button>
+      </div>
+      
+      <div class="quote" id="quote-container">
+        <p id="quote-text">"The successful warrior is the average man, with laser-like focus."</p>
+        <p class="quote-author">— Bruce Lee</p>
+      </div>
+      
+      <div class="footer">
+        <a href="#" id="settings-link">Open Settings</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="blocked.js" type="module"></script>
+</body>
+</html>

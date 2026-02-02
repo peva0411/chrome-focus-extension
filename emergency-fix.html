@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emergency Schedule Fix</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 { color: #d32f2f; margin-top: 0; }
+    button {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+    }
+    button:hover { background: #b71c1c; }
+    button.success { background: #4caf50; }
+    button.success:hover { background: #388e3c; }
+    .output {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .status.error { background: #ffebee; color: #c62828; }
+    .status.success { background: #e8f5e9; color: #2e7d32; }
+    .status.info { background: #e3f2fd; color: #1565c0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Emergency Schedule Fix</h1>
+    <p><strong>It's 5:53 PM and sites are still blocked?</strong> Let's fix this immediately.</p>
+    
+    <div id="status"></div>
+    
+    <button onclick="diagnose()">1️⃣ Diagnose Problem</button>
+    <button onclick="fixNow()" style="background: #ff9800;">2️⃣ Fix Now (Remove All Rules)</button>
+    <button onclick="reloadExtension()" class="success">3️⃣ Reload Extension</button>
+    
+    <div id="output" class="output" style="display:none;"></div>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+    
+    function log(msg, type = 'info') {
+      output.style.display = 'block';
+      const timestamp = new Date().toLocaleTimeString();
+      output.textContent += `[${timestamp}] ${msg}\n`;
+      output.scrollTop = output.scrollHeight;
+    }
+    
+    function setStatus(msg, type = 'info') {
+      status.className = `status ${type}`;
+      status.textContent = msg;
+      status.style.display = 'block';
+    }
+    
+    async function diagnose() {
+      output.textContent = '';
+      log('Starting diagnosis...', 'info');
+      setStatus('🔍 Diagnosing...', 'info');
+      
+      try {
+        // Check current time
+        const now = new Date();
+        log(`Current Time: ${now.toLocaleString()}`);
+        log(`Day: ${now.toLocaleDateString('en-US', { weekday: 'long' })}`);
+        log('');
+        
+        // Get schedule status
+        log('Checking schedule status...');
+        const status = await chrome.runtime.sendMessage({ type: 'GET_SCHEDULE_STATUS' });
+        log(`Should Block: ${status.shouldBlock}`);
+        log(`Active Schedule: ${status.activeSchedule?.name || 'None'}`);
+        log('');
+        
+        // Get schedules
+        log('Getting all schedules...');
+        const { schedules } = await chrome.runtime.sendMessage({ type: 'GET_SCHEDULES' });
+        log(`Found ${schedules.length} schedule(s)`);
+        schedules.forEach(s => {
+          log(`  - ${s.name}`);
+          Object.entries(s.days).forEach(([day, blocks]) => {
+            if (blocks.length > 0) {
+              blocks.forEach(b => {
+                log(`    ${day}: ${b.start} - ${b.end}`);
+              });
+            }
+          });
+        });
+        log('');
+        
+        // Check active rules
+        log('Checking active blocking rules...');
+        const rules = await chrome.declarativeNetRequest.getDynamicRules();
+        log(`Active Rules: ${rules.length}`);
+        log('');
+        
+        // Diagnosis
+        log('='.repeat(50));
+        if (status.shouldBlock && rules.length > 0) {
+          log('❌ PROBLEM: Schedule thinks blocking should still be active');
+          log('   The schedule configuration may be incorrect');
+          setStatus('❌ Problem Found: Schedule is incorrectly configured or not updating', 'error');
+        } else if (!status.shouldBlock && rules.length > 0) {
+          log('❌ PROBLEM: Schedule knows blocking should be off, but rules are still active');
+          log('   The schedule check is not updating the blocking manager');
+          setStatus('❌ Problem Found: Schedule check is not updating blocking rules', 'error');
+        } else if (status.shouldBlock && rules.length === 0) {
+          log('✅ Blocking is correctly disabled by schedule');
+          setStatus('✅ Everything looks correct! Try refreshing your blocked pages.', 'success');
+        } else {
+          log('✅ No blocking active');
+          setStatus('✅ Everything looks correct!', 'success');
+        }
+        
+      } catch (error) {
+        log(`ERROR: ${error.message}`);
+        setStatus('❌ Diagnosis failed: ' + error.message, 'error');
+      }
+    }
+    
+    async function fixNow() {
+      output.textContent = '';
+      log('Applying emergency fix...', 'info');
+      setStatus('🔧 Removing all blocking rules...', 'info');
+      
+      try {
+        // Get current rules
+        const rules = await chrome.declarativeNetRequest.getDynamicRules();
+        log(`Found ${rules.length} active rules`);
+        
+        if (rules.length === 0) {
+          log('No rules to remove - sites should already be accessible');
+          setStatus('✅ No blocking rules found. Sites should be accessible!', 'success');
+          return;
+        }
+        
+        // Remove all rules
+        const ruleIds = rules.map(r => r.id);
+        await chrome.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds: ruleIds,
+          addRules: []
+        });
+        
+        log(`✅ Successfully removed ${ruleIds.length} blocking rules`);
+        log('');
+        log('Sites should now be accessible!');
+        log('Please refresh any blocked pages.');
+        
+        setStatus(`✅ Fixed! Removed ${ruleIds.length} blocking rules. Refresh your pages!`, 'success');
+        
+      } catch (error) {
+        log(`ERROR: ${error.message}`);
+        setStatus('❌ Fix failed: ' + error.message, 'error');
+      }
+    }
+    
+    async function reloadExtension() {
+      log('Reloading extension...', 'info');
+      setStatus('🔄 Reloading extension with fixed code...', 'info');
+      
+      try {
+        await chrome.runtime.reload();
+      } catch (error) {
+        log(`Note: Extension will reload, this page will lose connection`);
+        setStatus('Extension is reloading...', 'info');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Extension</title>
+  <link rel="stylesheet" href="../common/themes.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Focus Extension</h1>
+      <div id="status-indicator" class="status-active">
+        <span class="status-dot"></span>
+        <span id="status-text">Active</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="quick-stats">
+        <div class="stat">
+          <span class="stat-label">Sites Blocked</span>
+          <span class="stat-value" id="sites-blocked">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Time Remaining</span>
+          <span class="stat-value" id="time-remaining">30m</span>
+        </div>
+      </section>
+
+      <section class="quick-actions">
+        <button id="pause-btn" class="btn btn-secondary">
+          Pause for 15min
+        </button>
+        <button id="add-site-btn" class="btn btn-primary">
+          Block Current Site
+        </button>
+      </section>
+    </main>
+
+    <footer>
+      <a href="#" id="settings-link">Settings</a>
+      <a href="#" id="stats-link">Statistics</a>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

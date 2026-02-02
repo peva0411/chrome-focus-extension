@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Focus Extension</title>
+  <link rel="stylesheet" href="../common/themes.css">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <div class="container">
+    <div class="welcome-screen active" data-step="1">
+      <div class="icon">⚡</div>
+      <h1>Welcome to Focus Extension!</h1>
+      <p>Take control of your productivity by blocking distracting websites during focus time.</p>
+      <button class="btn btn-primary next-btn">Get Started</button>
+    </div>
+
+    <div class="welcome-screen" data-step="2">
+      <div class="icon">🚫</div>
+      <h2>Block Distracting Sites</h2>
+      <p>Add websites that distract you. We'll help you stay focused by blocking access during your designated times.</p>
+      <div class="example">
+        <code>twitter.com</code>
+        <code>reddit.com</code>
+        <code>youtube.com</code>
+      </div>
+      <button class="btn btn-primary next-btn">Next</button>
+    </div>
+
+    <div class="welcome-screen" data-step="3">
+      <div class="icon">📅</div>
+      <h2>Set Your Schedule</h2>
+      <p>Choose when blocking should be active. Work hours, study time, or custom schedules.</p>
+      <button class="btn btn-primary next-btn">Next</button>
+    </div>
+
+    <div class="welcome-screen" data-step="4">
+      <div class="icon">⏱️</div>
+      <h2>Use Time Budgets</h2>
+      <p>Need to check a blocked site? Use your daily time budget for controlled access.</p>
+      <button class="btn btn-primary next-btn">Next</button>
+    </div>
+
+    <div class="welcome-screen" data-step="5">
+      <div class="icon">🎯</div>
+      <h2>You're All Set!</h2>
+      <p>Ready to boost your productivity? Let's set up your first blocked site.</p>
+      <button id="finish-btn" class="btn btn-primary">Open Settings</button>
+      <button id="skip-btn" class="btn btn-secondary">Skip for Now</button>
+    </div>
+
+    <div class="progress-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+
+  <script src="welcome.js" type="module"></script>
+</body>
+</html>

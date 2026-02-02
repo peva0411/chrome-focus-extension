@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Schedule Test & Fix</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+    }
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    .content {
+      padding: 30px;
+    }
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .section h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    .btn-danger {
+      background: #f56565;
+      color: white;
+    }
+    .btn-success {
+      background: #48bb78;
+      color: white;
+    }
+    .btn-warning {
+      background: #ed8936;
+      color: white;
+    }
+    .output {
+      background: #1a202c;
+      color: #68d391;
+      padding: 20px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .status-box {
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .status-error {
+      background: #fed7d7;
+      color: #c53030;
+      border-left: 4px solid #c53030;
+    }
+    .status-success {
+      background: #c6f6d5;
+      color: #22543d;
+      border-left: 4px solid #22543d;
+    }
+    .status-info {
+      background: #bee3f8;
+      color: #2c5282;
+      border-left: 4px solid #2c5282;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .info-card {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 2px solid #e2e8f0;
+    }
+    .info-card .label {
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 5px;
+    }
+    .info-card .value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2d3748;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 Schedule Diagnostic & Fix Tool</h1>
+      <p>Test and repair schedule functionality</p>
+    </div>
+    
+    <div class="content">
+      <div id="status"></div>
+      
+      <div class="section">
+        <h2>📊 Quick Status</h2>
+        <div class="info-grid" id="quickStatus">
+          <div class="info-card">
+            <div class="label">Current Time</div>
+            <div class="value" id="currentTime">--</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Should Block</div>
+            <div class="value" id="shouldBlock">--</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Active Rules</div>
+            <div class="value" id="activeRules">--</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Active Schedule</div>
+            <div class="value" id="activeSchedule">--</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>🔍 Diagnostic Tools</h2>
+        <div class="button-group">
+          <button class="btn-primary" onclick="fullDiagnostic()">Full Diagnostic</button>
+          <button class="btn-primary" onclick="checkAlarms()">Check Alarms</button>
+          <button class="btn-primary" onclick="testScheduleLogic()">Test Schedule Logic</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>🛠️ Quick Fixes</h2>
+        <div class="button-group">
+          <button class="btn-danger" onclick="removeAllRules()">Remove All Blocking Rules</button>
+          <button class="btn-warning" onclick="forceScheduleCheck()">Force Schedule Check</button>
+          <button class="btn-success" onclick="reloadExtension()">Reload Extension</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>📝 Output Log</h2>
+        <div id="output" class="output">Ready. Click a button above to start.\n</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+    const statusDiv = document.getElementById('status');
+    
+    function log(msg, color = '#68d391') {
+      const timestamp = new Date().toLocaleTimeString();
+      const line = document.createElement('span');
+      line.style.color = color;
+      line.textContent = `[${timestamp}] ${msg}\n`;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+    
+    function clearLog() {
+      output.innerHTML = '';
+    }
+    
+    function setStatus(msg, type = 'info') {
+      statusDiv.innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
+    }
+    
+    function updateQuickStatus(data) {
+      document.getElementById('currentTime').textContent = new Date().toLocaleTimeString();
+      if (data.shouldBlock !== undefined) {
+        document.getElementById('shouldBlock').textContent = data.shouldBlock ? '🔴 YES' : '🟢 NO';
+      }
+      if (data.ruleCount !== undefined) {
+        document.getElementById('activeRules').textContent = data.ruleCount;
+      }
+      if (data.schedule !== undefined) {
+        document.getElementById('activeSchedule').textContent = data.schedule || 'None';
+      }
+    }
+    
+    async function fullDiagnostic() {
+      clearLog();
+      log('='.repeat(60), '#fff');
+      log('FULL DIAGNOSTIC STARTED', '#fff');
+      log('='.repeat(60), '#fff');
+      
+      try {
+        // Current time
+        const now = new Date();
+        log(`\n📅 Current Time: ${now.toLocaleString()}`, '#a0aec0');
+        log(`Day: ${now.toLocaleDateString('en-US', { weekday: 'long' })}`, '#a0aec0');
+        
+        // Schedule status
+        log('\n🔍 Checking schedule status...', '#fff');
+        const status = await chrome.runtime.sendMessage({ type: 'GET_SCHEDULE_STATUS' });
+        log(`Should Block: ${status.shouldBlock ? '🔴 YES' : '🟢 NO'}`);
+        log(`Is Paused: ${status.isPaused ? 'YES' : 'NO'}`);
+        log(`Active Schedule: ${status.activeSchedule?.name || 'None'}`);
+        
+        if (status.activeSchedule) {
+          log(`\n📋 Active Schedule Details:`, '#a0aec0');
+          Object.entries(status.activeSchedule.days).forEach(([day, blocks]) => {
+            if (blocks && blocks.length > 0) {
+              blocks.forEach(b => {
+                log(`  ${day}: ${b.start} - ${b.end}`, '#68d391');
+              });
+            }
+          });
+        }
+        
+        // Alarms
+        log('\n⏰ Checking alarms...', '#fff');
+        const alarms = await chrome.alarms.getAll();
+        log(`Found ${alarms.length} alarm(s):`);
+        alarms.forEach(a => {
+          log(`  - ${a.name}: next at ${new Date(a.scheduledTime).toLocaleTimeString()}`, '#68d391');
+        });
+        
+        // Active rules
+        log('\n🚫 Checking blocking rules...', '#fff');
+        const rules = await chrome.declarativeNetRequest.getDynamicRules();
+        log(`Active Rules: ${rules.length}`);
+        
+        // Blocked sites
+        const { sites } = await chrome.runtime.sendMessage({ type: 'GET_BLOCKED_SITES' });
+        const enabledSites = sites.filter(s => s.enabled);
+        log(`Blocked Sites: ${enabledSites.length} enabled, ${sites.length} total`);
+        
+        // Analysis
+        log('\n' + '='.repeat(60), '#fff');
+        log('ANALYSIS', '#fff');
+        log('='.repeat(60), '#fff');
+        
+        const scheduleAlarm = alarms.find(a => a.name === 'scheduleCheck');
+        if (!scheduleAlarm) {
+          log('❌ PROBLEM: Schedule check alarm is NOT running!', '#f56565');
+          log('   The schedule will never update automatically.', '#f56565');
+          setStatus('❌ Critical: Schedule alarm is not running. Click "Reload Extension" to fix.', 'error');
+        } else {
+          log('✅ Schedule check alarm is running', '#48bb78');
+        }
+        
+        if (status.shouldBlock && rules.length === 0) {
+          log('⚠️  WARNING: Schedule says block but no rules active', '#ed8936');
+        } else if (!status.shouldBlock && rules.length > 0) {
+          log('❌ PROBLEM: Schedule says don\'t block but rules are active!', '#f56565');
+          log('   Sites will remain blocked until rules are removed.', '#f56565');
+          setStatus('❌ Problem: Blocking rules are active when they shouldn\'t be. Click "Remove All Blocking Rules".', 'error');
+        } else if (status.shouldBlock && rules.length > 0) {
+          log('✅ Blocking is correctly active per schedule', '#48bb78');
+          setStatus('✅ Everything is working correctly - blocking is active as scheduled.', 'success');
+        } else {
+          log('✅ Blocking is correctly disabled per schedule', '#48bb78');
+          setStatus('✅ Everything is working correctly - blocking is disabled.', 'success');
+        }
+        
+        updateQuickStatus({
+          shouldBlock: status.shouldBlock,
+          ruleCount: rules.length,
+          schedule: status.activeSchedule?.name || 'None'
+        });
+        
+      } catch (error) {
+        log(`\n❌ ERROR: ${error.message}`, '#f56565');
+        setStatus('❌ Diagnostic failed: ' + error.message, 'error');
+      }
+    }
+    
+    async function checkAlarms() {
+      clearLog();
+      log('Checking Chrome alarms...', '#fff');
+      
+      try {
+        const alarms = await chrome.alarms.getAll();
+        log(`\nFound ${alarms.length} alarm(s):\n`);
+        
+        alarms.forEach(alarm => {
+          log(`Alarm: ${alarm.name}`, '#a0aec0');
+          log(`  Next trigger: ${new Date(alarm.scheduledTime).toLocaleString()}`);
+          if (alarm.periodInMinutes) {
+            log(`  Period: Every ${alarm.periodInMinutes} minute(s)`);
+          }
+        });
+        
+        const scheduleAlarm = alarms.find(a => a.name === 'scheduleCheck');
+        if (scheduleAlarm) {
+          log(`\n✅ Schedule check alarm is active`, '#48bb78');
+          log(`   Next check in: ${Math.round((scheduleAlarm.scheduledTime - Date.now()) / 1000)} seconds`, '#48bb78');
+          setStatus('✅ Schedule alarm is running correctly.', 'success');
+        } else {
+          log(`\n❌ Schedule check alarm is NOT found!`, '#f56565');
+          log(`   Reload the extension to create it.`, '#f56565');
+          setStatus('❌ Schedule alarm missing - reload extension to fix.', 'error');
+        }
+        
+      } catch (error) {
+        log(`❌ ERROR: ${error.message}`, '#f56565');
+      }
+    }
+    
+    async function testScheduleLogic() {
+      clearLog();
+      log('Testing schedule logic...', '#fff');
+      
+      try {
+        const status = await chrome.runtime.sendMessage({ type: 'GET_SCHEDULE_STATUS' });
+        const now = new Date();
+        
+        log(`\nCurrent Time: ${now.toLocaleTimeString()}`);
+        log(`Current Day: ${now.toLocaleDateString('en-US', { weekday: 'long' })}`);
+        log(`\nSchedule Evaluation:`);
+        log(`  Should Block: ${status.shouldBlock ? 'YES' : 'NO'}`, status.shouldBlock ? '#f56565' : '#48bb78');
+        
+        if (status.activeSchedule) {
+          log(`\nActive Schedule: ${status.activeSchedule.name}`, '#a0aec0');
+          const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+          const blocks = status.activeSchedule.days[dayName] || [];
+          
+          if (blocks.length === 0) {
+            log(`  No blocks configured for ${dayName}`);
+          } else {
+            log(`  Blocks for ${dayName}:`);
+            blocks.forEach(b => {
+              log(`    ${b.start} - ${b.end}`, '#68d391');
+            });
+          }
+        } else {
+          log(`\nNo active schedule`, '#a0aec0');
+        }
+        
+      } catch (error) {
+        log(`❌ ERROR: ${error.message}`, '#f56565');
+      }
+    }
+    
+    async function removeAllRules() {
+      if (!confirm('Remove all blocking rules? Sites will become accessible.')) return;
+      
+      clearLog();
+      log('Removing all blocking rules...', '#fff');
+      
+      try {
+        const rules = await chrome.declarativeNetRequest.getDynamicRules();
+        const ruleIds = rules.map(r => r.id);
+        
+        if (ruleIds.length === 0) {
+          log('No rules to remove', '#a0aec0');
+          setStatus('ℹ️ No blocking rules found.', 'info');
+          return;
+        }
+        
+        await chrome.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds: ruleIds,
+          addRules: []
+        });
+        
+        log(`✅ Removed ${ruleIds.length} blocking rules`, '#48bb78');
+        log('Sites are now accessible. Refresh blocked pages.', '#48bb78');
+        setStatus(`✅ Success! Removed ${ruleIds.length} rules. Refresh your pages.`, 'success');
+        updateQuickStatus({ ruleCount: 0 });
+        
+      } catch (error) {
+        log(`❌ ERROR: ${error.message}`, '#f56565');
+        setStatus('❌ Failed to remove rules: ' + error.message, 'error');
+      }
+    }
+    
+    async function forceScheduleCheck() {
+      clearLog();
+      log('Forcing schedule check...', '#fff');
+      
+      try {
+        // This will trigger the alarm immediately
+        log('Requesting schedule status (triggers check)...', '#a0aec0');
+        const status = await chrome.runtime.sendMessage({ type: 'GET_SCHEDULE_STATUS' });
+        
+        log(`✅ Schedule checked`, '#48bb78');
+        log(`Should Block: ${status.shouldBlock ? 'YES' : 'NO'}`);
+        
+        // Wait a moment for the rules to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const rules = await chrome.declarativeNetRequest.getDynamicRules();
+        log(`Active Rules: ${rules.length}`);
+        
+        setStatus('✅ Schedule check completed.', 'success');
+        updateQuickStatus({ shouldBlock: status.shouldBlock, ruleCount: rules.length });
+        
+      } catch (error) {
+        log(`❌ ERROR: ${error.message}`, '#f56565');
+      }
+    }
+    
+    async function reloadExtension() {
+      if (!confirm('Reload the extension? This will apply all code fixes.')) return;
+      
+      clearLog();
+      log('Reloading extension...', '#fff');
+      setStatus('🔄 Extension is reloading...', 'info');
+      
+      try {
+        await chrome.runtime.reload();
+      } catch (error) {
+        log('Extension reload initiated (this page will disconnect)', '#a0aec0');
+      }
+    }
+    
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      fullDiagnostic();
+    });
+  </script>
+</body>
+</html>
