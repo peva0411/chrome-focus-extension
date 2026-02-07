@@ -12,6 +12,54 @@ const logger = new Logger('ServiceWorker');
  * Handles extension lifecycle, storage initialization, and coordination
  */
 
+// Icon paths for different states
+const ICON_PATHS = {
+  active: {
+    16: 'src/assets/icons/active/icon16.png',
+    32: 'src/assets/icons/active/icon32.png',
+    48: 'src/assets/icons/active/icon48.png',
+    128: 'src/assets/icons/active/icon128.png'
+  },
+  paused: {
+    16: 'src/assets/icons/paused/icon16.png',
+    32: 'src/assets/icons/paused/icon32.png',
+    48: 'src/assets/icons/paused/icon48.png',
+    128: 'src/assets/icons/paused/icon128.png'
+  }
+};
+
+// Track current icon state to avoid redundant updates
+let currentIconState = null;
+
+/**
+ * Update extension icon based on state
+ * @param {string} state - 'active' or 'paused'
+ */
+async function updateExtensionIcon(state) {
+  // Avoid redundant updates
+  if (currentIconState === state) {
+    return;
+  }
+  
+  try {
+    const iconPath = ICON_PATHS[state];
+    if (!iconPath) {
+      logger.warn(`Unknown icon state: ${state}`);
+      return;
+    }
+    
+    await chrome.action.setIcon({ path: iconPath });
+    currentIconState = state;
+    logger.info(`✓ Extension icon updated to: ${state}`);
+  } catch (error) {
+    logger.error(`Failed to update icon to ${state}:`, error);
+    // Fail gracefully - don't throw error
+  }
+}
+
+// Export for use by schedule manager
+export { updateExtensionIcon };
+
 // Service worker lifecycle
 chrome.runtime.onInstalled.addListener(async (details) => {
   logger.info('Extension installed:', details.reason);
@@ -85,6 +133,7 @@ async function initializeExtension() {
     
     // Initialize schedule manager and link it to blocking manager
     scheduleManager.setBlockingManager(blockingManager);
+    scheduleManager.setIconUpdateFunction(updateExtensionIcon);
     logger.info('✓ Blocking manager linked to schedule manager');
     
     await scheduleManager.initialize();
@@ -102,6 +151,11 @@ async function initializeExtension() {
     // Initialize statistics manager
     await statisticsManager.initialize();
     logger.info('✓ Statistics manager initialized');
+    
+    // Set initial icon state based on current status
+    const scheduleStatus = await scheduleManager.getStatus();
+    const iconState = scheduleStatus.isPaused ? 'paused' : 'active';
+    await updateExtensionIcon(iconState);
     
     logger.info('✅ Extension initialized successfully');
   } catch (error) {

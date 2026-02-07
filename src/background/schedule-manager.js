@@ -8,6 +8,9 @@ const logger = new Logger('ScheduleManager');
 // Will be set by setBlockingManager() to avoid circular dependency
 let blockingManager = null;
 
+// Icon update function - will be set from service worker
+let updateExtensionIcon = null;
+
 /**
  * Manages schedules and determines if blocking should be active
  */
@@ -86,6 +89,7 @@ export class ScheduleManager {
    */
   async checkScheduleState() {
     const shouldBlock = await this.shouldBlockNow();
+    const isPaused = this.pausedUntil && Date.now() < this.pausedUntil;
     
     const now = new Date();
     logger.info(`Schedule check at ${now.toLocaleTimeString()}: shouldBlock = ${shouldBlock}`);
@@ -100,6 +104,12 @@ export class ScheduleManager {
       }
     } else {
       logger.warn('Blocking manager not set - cannot update blocking state');
+    }
+    
+    // Update extension icon based on state
+    if (updateExtensionIcon) {
+      const iconState = isPaused ? 'paused' : 'active';
+      await updateExtensionIcon(iconState);
     }
 
     return shouldBlock;
@@ -288,6 +298,11 @@ export class ScheduleManager {
     logger.info(`⏸️  Paused until ${new Date(this.pausedUntil)}`);
     logger.info(`⏸️  pausedUntil timestamp: ${this.pausedUntil}`);
     
+    // Update icon to paused state
+    if (updateExtensionIcon) {
+      await updateExtensionIcon('paused');
+    }
+    
     // Trigger state check
     logger.info('⏸️  Calling checkScheduleState...');
     await this.checkScheduleState();
@@ -303,6 +318,11 @@ export class ScheduleManager {
   async resumeBlocking() {
     this.pausedUntil = null;
     logger.info('Blocking resumed');
+    
+    // Update icon to active state
+    if (updateExtensionIcon) {
+      await updateExtensionIcon('active');
+    }
     
     await this.checkScheduleState();
     return true;
@@ -377,6 +397,14 @@ export class ScheduleManager {
     } else {
       logger.info('Schedule monitoring NOT started (disabled for testing)');
     }
+  }
+  
+  /**
+   * Set the icon update function (called by service worker)
+   */
+  setIconUpdateFunction(fn) {
+    updateExtensionIcon = fn;
+    logger.info('Icon update function set');
   }
 }
 
